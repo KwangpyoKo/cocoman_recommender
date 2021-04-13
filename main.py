@@ -1,20 +1,9 @@
 import uvicorn
 from fastapi import FastAPI
 
-from cocoman_recommender.config.config import conf
-from cocoman_recommender.schemas.contents import Contents
-from cocoman_recommender.schemas.ott import Ott
-from cocoman_recommender.schemas.actor import Actor
-from cocoman_recommender.schemas.director import Director
-from cocoman_recommender.schemas.genre import Genre
-from cocoman_recommender.schemas.keyword import Keyword
-from cocoman_recommender.schemas.review import Review
-from cocoman_recommender.schemas.user import User
-from cocoman_recommender.schemas.star_rating import StarRating
-from cocoman_recommender.schemas.search_history import SearchHistory
-
 from cocoman_recommender.containers import Container
 from cocoman_recommender.routers import ott_controller
+from cocoman_recommender.routers import contents_controller
 
 
 def create_app():
@@ -22,7 +11,7 @@ def create_app():
     app = FastAPI()
 
     """ Define Container """
-    container.wire(modules=[ott_controller])
+    container.wire(modules=[ott_controller, contents_controller])
 
     app.container = container
 
@@ -34,7 +23,8 @@ def create_app():
     """ Define Middleware """
 
     """ Define Router """
-    app.include_router(ott_controller.router)
+    app.include_router(ott_controller.router, prefix='/ott')
+    app.include_router(contents_controller.router, prefix='/contents')
 
     return app
 

@@ -4,7 +4,7 @@ from sqlalchemy import (
     String
 )
 from typing import List
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Session
 
 from cocoman_recommender.schemas.base_repository import BaseRepository
 from cocoman_recommender.schemas.contents import contents_genre
@@ -19,5 +19,12 @@ class Genre(Base):
 
 
 class GenreRepository(BaseRepository):
+    def __init__(self, session: Session):
+        super().__init__(session)
+        self.query = self.session.query(Genre)
+
     def get_all(self) -> List[Genre]:
-        return self.session.query(Genre).all()
+        return self.query.all()
+
+    def get_by_id(self, id: int) -> Genre:
+        return self.query.get(id=id)

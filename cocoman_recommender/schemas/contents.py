@@ -6,30 +6,30 @@ from sqlalchemy import (
     Table
 )
 from typing import List
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Session
 
 from cocoman_recommender.schemas.base_repository import BaseRepository
 from cocoman_recommender.schemas.conn import Base
 
 contents_ott = Table('contents_ott', Base.metadata,
-                     Column('contents_id', Integer, ForeignKey('TB_CONTENTS.id')),
-                     Column('ott_id', Integer, ForeignKey('TB_OTT.id'))
+                     Column('contents_id', Integer, ForeignKey('TB_CONTENTS.id'), primary_key=True),
+                     Column('ott_id', Integer, ForeignKey('TB_OTT.id'), primary_key=True)
                      )
 contents_actor = Table('contents_actor', Base.metadata,
-                       Column('contents_id', Integer, ForeignKey('TB_CONTENTS.id')),
-                       Column('actor_id', Integer, ForeignKey('TB_ACTOR.id'))
+                       Column('contents_id', Integer, ForeignKey('TB_CONTENTS.id'), primary_key=True),
+                       Column('actor_id', Integer, ForeignKey('TB_ACTOR.id'), primary_key=True)
                        )
 contents_director = Table('contents_director', Base.metadata,
-                          Column('contents_id', Integer, ForeignKey('TB_CONTENTS.id')),
-                          Column('director_id', Integer, ForeignKey('TB_DIRECTOR.id'))
+                          Column('contents_id', Integer, ForeignKey('TB_CONTENTS.id'), primary_key=True),
+                          Column('director_id', Integer, ForeignKey('TB_DIRECTOR.id'), primary_key=True)
                           )
 contents_genre = Table('contents_genre', Base.metadata,
-                       Column('contents_id', Integer, ForeignKey('TB_CONTENTS.id')),
-                       Column('genre_id', Integer, ForeignKey('TB_GENRE.id'))
+                       Column('contents_id', Integer, ForeignKey('TB_CONTENTS.id'), primary_key=True),
+                       Column('genre_id', Integer, ForeignKey('TB_GENRE.id'), primary_key=True)
                        )
 contents_keyword = Table('contents_keyword', Base.metadata,
-                         Column('contents_id', Integer, ForeignKey('TB_CONTENTS.id')),
-                         Column('keyword_id', Integer, ForeignKey('TB_KEYWORD.id'))
+                         Column('contents_id', Integer, ForeignKey('TB_CONTENTS.id'), primary_key=True),
+                         Column('keyword_id', Integer, ForeignKey('TB_KEYWORD.id'), primary_key=True)
                          )
 
 
@@ -54,5 +54,39 @@ class Contents(Base):
 
 
 class ContentsRepository(BaseRepository):
+    def __init__(self, session: Session):
+        super().__init__(session)
+        self.query = self.session.query(Contents)
+
     def get_all(self) -> List[Contents]:
-        return self.session.query(Contents).all()
+        return self.query.all()
+
+    def get_by_id(self, id: int):
+        return self.query.get(id=id)
+
+    def create(self, entity: Contents):
+        self.query.add(entity)
+        self.session.commit()
+
+    def delete_by_id(self, id: int):
+        self.query.filter(Contents.id == id).delete(synchronize_session='fetch')
+        self.session.commit()
+
+    def update(self, id: int, entity: Contents):
+        content_query = self.query.filter(Contents.id == id)
+        content_query.update({'title': entity.title,
+                              'year': entity.year,
+                              'country': entity.country,
+                              'running_time': entity.running_time,
+                              'grade_rate': entity.grade_rate,
+                              'broadcaster': entity.broadcaster,
+                              'open_date': entity.open_date,
+                              'broadcast_date': entity.broadcast_date,
+                              'story': entity.story,
+                              'poster_path': entity.poster_path,
+                              'ott_id': entity.ott_id,
+                              'actors_id': entity.actors_id,
+                              'directors_id': entity.directors_id,
+                              'genres_id': entity.genres_id,
+                              'keywords_id': entity.keywords_id,
+                              }, synchronize_session='fetch')

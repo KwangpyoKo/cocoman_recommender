@@ -4,7 +4,7 @@ from sqlalchemy import (
     String
 )
 from typing import List
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Session
 
 from cocoman_recommender.schemas.base_repository import BaseRepository
 from cocoman_recommender.schemas.contents import contents_keyword
@@ -19,5 +19,12 @@ class Keyword(Base):
 
 
 class KeywordRepository(BaseRepository):
+    def __init__(self, session: Session):
+        super().__init__(session)
+        self.query = self.session.query(Keyword)
+
     def get_all(self) -> List[Keyword]:
-        return self.session.query(Keyword).all()
+        return self.query.all()
+
+    def get_by_id(self, id: int) -> Keyword:
+        return self.query.get(id=id)

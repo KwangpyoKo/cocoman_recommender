@@ -4,7 +4,7 @@ from sqlalchemy import (
     String
 )
 from typing import List
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Session
 
 from cocoman_recommender.schemas.base_repository import BaseRepository
 from cocoman_recommender.schemas.contents import contents_director
@@ -20,5 +20,12 @@ class Director(Base):
 
 
 class DirectorRepository(BaseRepository):
+    def __init__(self, session: Session):
+        super().__init__(session)
+        self.query = self.session.query(Director)
+
     def get_all(self) -> List[Director]:
-        return self.session.query(Director).all()
+        return self.query.all()
+
+    def get_by_id(self, id: int) -> Director:
+        return self.query.get(id=id)

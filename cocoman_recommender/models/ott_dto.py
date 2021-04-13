@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from dataclasses import dataclass
 
 
-class OttDto(BaseModel):
-    id: str
+@dataclass
+class OttDto:
     name: str
     image_path: str
